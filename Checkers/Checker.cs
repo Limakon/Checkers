@@ -51,11 +51,33 @@ namespace Checkers
 
             if (color == CheckersColors.White)
             {
-                
+                array.Add(new Checker(canvas, Color, new Cell(Notes.A, 1)));
+                array.Add(new Checker(canvas, Color, new Cell(Notes.A, 3)));
+                array.Add(new Checker(canvas, Color, new Cell(Notes.B, 2)));
+                array.Add(new Checker(canvas, Color, new Cell(Notes.C, 1)));
+                array.Add(new Checker(canvas, Color, new Cell(Notes.C, 3)));
+                array.Add(new Checker(canvas, Color, new Cell(Notes.D, 2)));
+                array.Add(new Checker(canvas, Color, new Cell(Notes.E, 1)));
+                array.Add(new Checker(canvas, Color, new Cell(Notes.E, 3)));
+                array.Add(new Checker(canvas, Color, new Cell(Notes.F, 2)));
+                array.Add(new Checker(canvas, Color, new Cell(Notes.G, 1)));
+                array.Add(new Checker(canvas, Color, new Cell(Notes.G, 3)));
+                array.Add(new Checker(canvas, Color, new Cell(Notes.H, 2)));
             }
             else
             {
-
+                array.Add(new Checker(canvas, Color, new Cell(Notes.A, 7)));
+                array.Add(new Checker(canvas, Color, new Cell(Notes.B, 6)));
+                array.Add(new Checker(canvas, Color, new Cell(Notes.B, 8)));
+                array.Add(new Checker(canvas, Color, new Cell(Notes.C, 7)));
+                array.Add(new Checker(canvas, Color, new Cell(Notes.D, 6)));
+                array.Add(new Checker(canvas, Color, new Cell(Notes.D, 8)));
+                array.Add(new Checker(canvas, Color, new Cell(Notes.E, 7)));
+                array.Add(new Checker(canvas, Color, new Cell(Notes.F, 6)));
+                array.Add(new Checker(canvas, Color, new Cell(Notes.F, 8)));
+                array.Add(new Checker(canvas, Color, new Cell(Notes.G, 7)));
+                array.Add(new Checker(canvas, Color, new Cell(Notes.H, 6)));
+                array.Add(new Checker(canvas, Color, new Cell(Notes.H, 8)));
             }
         }
 
@@ -268,6 +290,185 @@ namespace Checkers
                     }
                 }
             }
+        }
+
+        public Step GetSteps(GameField gameField)
+        {
+            this.gameField = gameField;
+
+            Step step = new Step();
+
+            if (Dame)
+            {
+                AddStepDame(step, 1);
+                AddStepDame(step, 2);
+                AddStepDame(step, 3);
+                AddStepDame(step, 4);
+            }
+            else
+            {
+                if(Color == CheckersColors.White)
+                {
+                    AddStep(step, 1);
+                    AddStep(step, 2);
+                }
+                else
+                {
+                    AddStep(step, 3);
+                    AddStep(step, 4);
+                }
+            }
+
+            return step;
+        }
+
+        public Step GetStepsKill(GameField gameField)
+        {
+            this.gameField = gameField;
+
+            Step step = new Step();
+
+            if (Dame)
+            {
+                nodeTree = null;
+                AddStepKillDame(null, 1, null);
+                if(nodeTree != null)
+                {
+                    nodeTree.AddSteps(this, ref step);
+                    nodeTree = null;
+                }
+
+                AddStepKillDame(null, 2, null);
+                if(nodeTree != null)
+                {
+                    nodeTree.AddSteps(this, ref step);
+                    nodeTree = null;
+                }
+
+                AddStepKillDame(null, 3, null);
+                if (nodeTree != null)
+                {
+                    nodeTree.AddSteps(this, ref step);
+                    nodeTree = null;
+                }
+
+                AddStepKillDame(null, 4, null);
+                if (nodeTree != null)
+                {
+                    nodeTree.AddSteps(this, ref step);
+                    nodeTree = null;
+                }
+            }
+            else
+            {
+                nodeTree = null;
+                AddStepKill(null, 1, null);
+                if (nodeTree != null)
+                {
+                    nodeTree.AddSteps(this, ref step);
+                    nodeTree = null;
+                }
+
+                AddStepKill(null, 2, null);
+                if (nodeTree != null)
+                {
+                    nodeTree.AddSteps(this, ref step);
+                    nodeTree = null;
+                }
+
+                AddStepKill(null, 3, null);
+                if (nodeTree != null)
+                {
+                    nodeTree.AddSteps(this, ref step);
+                    nodeTree = null;
+                }
+
+                AddStepKillDame(null, 4, null);
+                if (nodeTree != null)
+                {
+                    nodeTree.AddSteps(this, ref step);
+                    nodeTree = null;
+                }
+            }
+
+            return step;
+        }
+
+        public bool Run(GameField gameField, Step step)
+        {
+            Step stepKill = GetStepsKill(gameField);
+
+            if(stepKill.Count > 0)
+            {
+                Step run;
+                if(step == null)
+                {
+                    run = stepKill.GetStep();
+                }
+                else
+                {
+                    run = step;
+                }
+
+                SetPosition(run.Position);
+
+                for(int i = 0; i < run.Kills.Count; i++)
+                {
+                    Checker checker = (Checker)run.Kills[i];
+
+                    canvas.Children.Remove(checker.checker[0]);
+                    canvas.Children.Remove(checker.checker[1]);
+
+                    if(checker.Color == CheckersColors.White)
+                    {
+                        gameField.WhiteChecks.Remove(checker);
+                    }
+                    else
+                    {
+                        gameField.BlackChecks.Remove(checker);
+                    }
+                }
+
+                return true;
+            }
+
+            Step steps = GetSteps(gameField);
+
+            if(steps.Count > 0)
+            {
+                Step run;
+                if (step == null)
+                {
+                    run = steps.GetStep();
+                }
+                else
+                {
+                    run = step;
+                }
+
+                SetPosition(run.Position);
+                return true;
+            }
+
+            return false;
+        }
+
+        public void RemoveAt(int n)
+        {
+            array.RemoveAt(n);
+        }
+
+        public void Remove(Checker checker)
+        {
+            checker.Delete();
+
+            array.Remove(checker);
+        }
+
+        public void Move(int n, Cell position)
+        {
+            Checker checker = this[n];
+            checker.SetPosition(position);
         }
     }
 }

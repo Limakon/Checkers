@@ -22,6 +22,11 @@ namespace Checkers
             this.Checker = Checker;
             this.Position = Position;
             Kills = new ArrayList();
+            
+        }
+
+        public Step()
+        {
             array = new ArrayList();
             random = new Random();
         }
